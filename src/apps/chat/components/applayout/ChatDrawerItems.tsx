@@ -145,7 +145,7 @@ export function ChatDrawerItems(props: {
     <MenuItem disabled={!hasChats} onClick={props.onDeleteAllConversations}>
       <ListItemDecorator><DeleteOutlineIcon /></ListItemDecorator>
       <Typography>
-        Delete all ({totalConversations}/{MAX_CONVERSATIONS})
+        Delete {totalConversations >= 2 ? `all ${totalConversations} chats` : 'chat'}      
       </Typography>
     </MenuItem>
 
