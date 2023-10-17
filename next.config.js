@@ -11,7 +11,7 @@ let nextConfig = {
     HAS_SERVER_KEY_OPENROUTER: !!process.env.OPENROUTER_API_KEY,
     HAS_SERVER_KEY_PRODIA: !!process.env.PRODIA_API_KEY,
   },
-  webpack(config, { isServer, dev }) {
+  webpack (config, { isServer, dev }) {
     // @mui/joy: anything material gets redirected to Joy
     config.resolve.alias['@mui/material'] = '@mui/joy';
 
@@ -20,6 +20,12 @@ let nextConfig = {
       asyncWebAssembly: true,
       layers: true,
     };
+
+    config.module.rules.push(
+      {
+        test: /\.ya?ml$/,
+        use: 'yaml-loader'
+      })
 
     return config;
   },

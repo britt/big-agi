@@ -1,6 +1,21 @@
-import * as React from 'react';
+import * as React from 'react'
+import ymlPurposes from './purposes.yml'
 
-export type SystemPurposeId = 'Catalyst' | 'Custom' | 'Designer' | 'Developer' | 'Executive' | 'Generic' | 'Scientist';
+export type SystemPurposeId = string;
+
+// = 'Catalyst'
+//   | 'Custom'
+//   | 'Designer'
+//   | 'Developer'
+//   | 'DevOps'
+//   | 'DevOps (Adventure)'
+//   | 'Executive'
+//   | 'ExpertPanel'
+//   | 'Generic'
+//   | 'LinuxAdmin'
+//   | 'LMGTFY'
+//   | 'Scientist'
+//   | 'TextAdventure';
 
 export const defaultSystemPurposeId: SystemPurposeId = 'Generic';
 
@@ -15,7 +30,9 @@ type SystemPurposeData = {
   voices?: { elevenLabs?: { voiceId: string } };
 };
 
-export const SystemPurposes: { [key in SystemPurposeId]: SystemPurposeData } = {
+// TODO: update default system purpose to Carson assistant
+// TODO: update Logo and Favicon
+const innatePurposes: { [key in SystemPurposeId]: SystemPurposeData } = {
   Developer: {
     title: 'Developer',
     description: 'Helps you code',
@@ -67,3 +84,10 @@ export const SystemPurposes: { [key in SystemPurposeId]: SystemPurposeData } = {
     symbol: '✨',
   },
 };
+
+console.log('ymlPurposes', ymlPurposes)
+
+export const SystemPurposes = {
+  ...ymlPurposes.purposes,
+  ...innatePurposes,
+}
