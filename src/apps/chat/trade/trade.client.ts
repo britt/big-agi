@@ -7,7 +7,7 @@ import { DModelSource, useModelsStore } from '~/modules/llms/store-llms';
 import { DConversation, DMessage, useChatStore } from '~/common/state/store-chats';
 import { prettyBaseModel } from '~/common/util/modelUtils';
 
-import { ImportedOutcome } from './ImportOutcomeModal';
+import { ImportedOutcome } from './import/ImportOutcomeModal';
 
 
 /**
@@ -22,7 +22,7 @@ export function loadAllConversationsFromJson(fileName: string, obj: any, outcome
   // parse ExportedAllJsonV1
   if (hasConversations && !hasMessages) {
     const payload = obj as ExportedAllJsonV1;
-    for (let conversation of payload.conversations)
+    for (const conversation of payload.conversations)
       pushOutcomeFromJsonV1(fileName, conversation, outcome);
   }
   // parse ExportedConversationJsonV1

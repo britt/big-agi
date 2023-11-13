@@ -1,18 +1,18 @@
 import * as React from 'react';
 
-import { Alert, Box, Button, FormControl, FormHelperText, FormLabel, Input, Typography } from '@mui/joy';
-import SyncIcon from '@mui/icons-material/Sync';
+import { Alert, Box, Typography } from '@mui/joy';
 
-import { apiQuery } from '~/common/util/trpc.client';
-
+import { FormTextField } from '~/common/components/forms/FormTextField';
 import { InlineError } from '~/common/components/InlineError';
 import { Link } from '~/common/components/Link';
-import { settingsCol1Width, settingsGap } from '~/common/theme';
+import { SetupFormRefetchButton } from '~/common/components/forms/SetupFormRefetchButton';
+import { apiQuery } from '~/common/util/trpc.client';
+import { settingsGap } from '~/common/app.theme';
 
-import type { LLMOptionsOpenAI } from '../openai/openai.vendor';
-import { DLLM, DModelSource, DModelSourceId, useModelsStore, useSourceSetup } from '../../store-llms';
+import { DModelSourceId, useModelsStore, useSourceSetup } from '../../store-llms';
+import { modelDescriptionToDLLM } from '../openai/OpenAISourceSetup';
 
-import { ModelVendorOoobabooga, SourceSetupOobabooga } from './oobabooga.vendor';
+import { ModelVendorOoobabooga } from './oobabooga.vendor';
 
 
 export function OobaboogaSourceSetup(props: { sourceId: DModelSourceId }) {
@@ -25,21 +25,9 @@ export function OobaboogaSourceSetup(props: { sourceId: DModelSourceId }) {
   const { oaiHost } = access;
 
   // fetch models
-  const { isFetching, refetch, isError, error } = apiQuery.llmOpenAI.listModels.useQuery({
-    access,
-  }, {
+  const { isFetching, refetch, isError, error } = apiQuery.llmOpenAI.listModels.useQuery({ access }, {
     enabled: false, //!hasModels && !!asValidURL(normSetup.oaiHost),
-    onSuccess: (models) => {
-      const llms: DLLM<SourceSetupOobabooga, LLMOptionsOpenAI>[] = [];
-      if (source && models) {
-        for (const model of models) {
-          const llm = oobaboogaModelToDLLM(model, source);
-          if (llm)
-            llms.push(llm);
-        }
-      }
-      useModelsStore.getState().addLLMs(llms);
-    },
+    onSuccess: models => source && useModelsStore.getState().addLLMs(models.models.map(model => modelDescriptionToDLLM(model, source))),
     staleTime: Infinity,
   });
 
@@ -48,76 +36,28 @@ export function OobaboogaSourceSetup(props: { sourceId: DModelSourceId }) {
     <Typography level='body-sm'>
       You can use a running <Link href='https://github.com/oobabooga/text-generation-webui' target='_blank'>
       text-generation-webui</Link> instance as a source for local models.
-      Follow <Link href='https://github.com/enricoros/big-agi/blob/main/docs/local-llm-text-web-ui.md' target='_blank'>
+      Follow <Link href='https://github.com/enricoros/big-agi/blob/main/docs/config-local-oobabooga.md' target='_blank'>
       the instructions</Link> to set up the server.
     </Typography>
 
-    <FormControl orientation='horizontal' sx={{ flexWrap: 'wrap', justifyContent: 'space-between' }}>
-      <Box sx={{ minWidth: settingsCol1Width }}>
-        <FormLabel>
-          API Base
-        </FormLabel>
-        <FormHelperText sx={{ display: 'block' }}>
-          Excluding /v1
-        </FormHelperText>
-      </Box>
-      <Input
-        variant='outlined' placeholder='http://127.0.0.1:5001'
-        value={oaiHost} onChange={event => updateSetup({ oaiHost: event.target.value })}
-        sx={{ flexGrow: 1 }}
-      />
-    </FormControl>
+    <FormTextField
+      title='API Base'
+      description='Excluding /v1'
+      placeholder='http://127.0.0.1:5000'
+      value={oaiHost}
+      onChange={text => updateSetup({ oaiHost: text })}
+    />
 
-    {sourceHasLLMs && <Alert variant='soft' color='warning'>
-      Success! Note The active model must be selected on the Oobabooga server, as it does not support switching models via API.
+    {sourceHasLLMs && <Alert variant='soft' color='warning' sx={{ display: 'block' }}>
+      Success! Note: your model of choice must be loaded in
+      the <Link noLinkStyle href='http://127.0.0.1:7860' target='_blank'> Oobabooga UI</Link>,
+      as Oobabooga does not support switching models via API.
       Concurrent model execution is also not supported.
     </Alert>}
 
-    <Box sx={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between' }}>
-      <Button
-        variant='solid' color={isError ? 'warning' : 'primary'}
-        disabled={!(oaiHost.length >= 7) || isFetching}
-        endDecorator={<SyncIcon />}
-        onClick={() => refetch()}
-        sx={{ minWidth: 120, ml: 'auto' }}
-      >
-        Models
-      </Button>
-    </Box>
+    <SetupFormRefetchButton refetch={refetch} disabled={!(oaiHost.length >= 7) || isFetching} error={isError} />
 
     {isError && <InlineError error={error} />}
 
   </Box>;
-}
-
-const NotChatModels: string[] = [
-  'text-curie-001', 'text-davinci-002', 'all-mpnet-base-v2', 'gpt-3.5-turbo', 'text-embedding-ada-002',
-];
-
-
-function oobaboogaModelToDLLM(model: { id: string, created: number }, source: DModelSource<SourceSetupOobabooga>): DLLM<SourceSetupOobabooga, LLMOptionsOpenAI> | null {
-  // if the model id is one of NotChatModels, we don't want to show it
-  if (NotChatModels.includes(model.id))
-    return null;
-  let label = model.id.replaceAll(/[_-]/g, ' ').split(' ').map(word => word[0].toUpperCase() + word.slice(1)).join(' ');
-  if (label.endsWith('.bin'))
-    label = label.slice(0, -4);
-  // TODO - figure out how to the context window size from Oobabooga
-  const contextTokens = 4096;
-  return {
-    id: `${source.id}-${model.id}`,
-    label,
-    created: model.created || Math.round(Date.now() / 1000),
-    description: 'Oobabooga model',
-    tags: [], // ['stream', 'chat'],
-    contextTokens,
-    hidden: NotChatModels.includes(model.id),
-    sId: source.id,
-    _source: source,
-    options: {
-      llmRef: model.id,
-      llmTemperature: 0.5,
-      llmResponseTokens: Math.round(contextTokens / 8),
-    },
-  };
 }

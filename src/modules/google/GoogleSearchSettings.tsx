@@ -7,7 +7,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 import { Link } from '~/common/components/Link';
-import { settingsCol1Width, settingsGap } from '~/common/theme';
+import { settingsCol1Width, settingsGap } from '~/common/app.theme';
 
 import { isValidGoogleCloudApiKey, isValidGoogleCseId, requireUserKeyGoogleCse } from './search.client';
 import { useGoogleSearchStore } from './store-google';
@@ -38,7 +38,7 @@ export function GoogleSearchSettings() {
         </Typography>
       </Box>
 
-      <FormControl orientation='horizontal' sx={{ justifyContent: 'space-between' }}>
+      <FormControl orientation='horizontal' sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Tooltip title='Create your Google Cloud "API Key Credential" and enter it here'>
             <FormLabel sx={{ minWidth: settingsCol1Width }}>
@@ -58,7 +58,7 @@ export function GoogleSearchSettings() {
         />
       </FormControl>
 
-      <FormControl orientation='horizontal' sx={{ justifyContent: 'space-between' }}>
+      <FormControl orientation='horizontal' sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Tooltip title='Create your Google "Programmable Search Engine" and enter its ID here'>
             <FormLabel sx={{ minWidth: settingsCol1Width }}>

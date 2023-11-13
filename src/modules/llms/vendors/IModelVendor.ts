@@ -4,7 +4,7 @@ import type { DLLM, DModelSourceId } from '../store-llms';
 import { VChatFunctionIn, VChatMessageIn, VChatMessageOrFunctionCallOut, VChatMessageOut } from '../transports/chatGenerate';
 
 
-export type ModelVendorId = 'anthropic' | 'azure' | 'localai' | 'oobabooga' | 'openai' | 'openrouter';
+export type ModelVendorId = 'anthropic' | 'azure' | 'localai' | 'ollama' | 'oobabooga' | 'openai' | 'openrouter';
 
 
 export interface IModelVendor<TSourceSetup = unknown, TLLMOptions = unknown, TAccess = unknown, TDLLM = DLLM<TSourceSetup, TLLMOptions>> {
@@ -16,7 +16,7 @@ export interface IModelVendor<TSourceSetup = unknown, TLLMOptions = unknown, TAc
   readonly hasServerKey?: boolean;
 
   // components
-  readonly Icon: React.ComponentType;
+  readonly Icon: React.ComponentType | string;
   readonly SourceSetupComponent: React.ComponentType<{ sourceId: DModelSourceId }>;
   readonly LLMOptionsComponent: React.ComponentType<{ llm: TDLLM }>;
 

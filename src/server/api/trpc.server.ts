@@ -7,8 +7,6 @@
  * need to use are documented accordingly near the end.
  */
 import { initTRPC } from '@trpc/server';
-import { type CreateNextContextOptions } from '@trpc/server/adapters/next';
-import { type FetchCreateContextFnOptions } from '@trpc/server/dist/adapters/fetch';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
 
@@ -21,13 +19,7 @@ import { ZodError } from 'zod';
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
 
-export const createTRPCNodeContext = ({ /*req, res*/ }: CreateNextContextOptions) => {
-  // ...
-  // ...
-  return {};
-};
-
-export const createTRPCEdgeContext = ({ /*req, resHeaders*/ }: FetchCreateContextFnOptions) => {
+export const createTRPCFetchContext = ({ /*req, resHeaders*/ }: { req: Request; resHeaders: Headers; }) => {
   // const user = { name: req.headers.get('username') ?? 'anonymous' };
   // return { req, resHeaders };
   return {};
@@ -42,7 +34,7 @@ export const createTRPCEdgeContext = ({ /*req, resHeaders*/ }: FetchCreateContex
  * errors on the backend.
  */
 
-const t = initTRPC.context<typeof createTRPCEdgeContext>().create({
+const t = initTRPC.context<typeof createTRPCFetchContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
     return {

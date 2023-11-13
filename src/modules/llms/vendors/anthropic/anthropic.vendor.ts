@@ -3,7 +3,7 @@ import { apiAsync } from '~/common/util/trpc.client';
 import { AnthropicIcon } from '~/common/components/icons/AnthropicIcon';
 
 import type { IModelVendor } from '../IModelVendor';
-import type { AnthropicAccessSchema } from '../../transports/server/anthropic.router';
+import type { AnthropicAccessSchema } from '../../transports/server/anthropic/anthropic.router';
 import type { VChatMessageIn, VChatMessageOrFunctionCallOut, VChatMessageOut } from '../../transports/chatGenerate';
 
 import { LLMOptionsOpenAI } from '../openai/openai.vendor';
@@ -13,11 +13,12 @@ import { AnthropicSourceSetup } from './AnthropicSourceSetup';
 
 
 // special symbols
-export const isValidAnthropicApiKey = (apiKey?: string) => !!apiKey && apiKey.startsWith('sk-') && apiKey.length > 40;
+export const isValidAnthropicApiKey = (apiKey?: string) => !!apiKey && (apiKey.startsWith('sk-') ? apiKey.length > 40 : apiKey.length >= 40);
 
 export interface SourceSetupAnthropic {
   anthropicKey: string;
   anthropicHost: string;
+  heliconeKey: string;
 }
 
 export const ModelVendorAnthropic: IModelVendor<SourceSetupAnthropic, LLMOptionsOpenAI, AnthropicAccessSchema> = {
@@ -37,7 +38,8 @@ export const ModelVendorAnthropic: IModelVendor<SourceSetupAnthropic, LLMOptions
   getAccess: (partialSetup): AnthropicAccessSchema => ({
     dialect: 'anthropic',
     anthropicKey: partialSetup?.anthropicKey || '',
-    anthropicHost: partialSetup?.anthropicHost || '',
+    anthropicHost: partialSetup?.anthropicHost || null,
+    heliconeKey: partialSetup?.heliconeKey || null,
   }),
   callChatGenerate(llm, messages: VChatMessageIn[], maxTokens?: number): Promise<VChatMessageOut> {
     return anthropicCallChatGenerate(this.getAccess(llm._source.setup), llm.options, messages, /*null, null,*/ maxTokens);
